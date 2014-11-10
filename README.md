@@ -1,4 +1,4 @@
-bettercsv
+bettercsv [![Build Status](https://travis-ci.org/tinygrasshopper/bettercsv.svg)](https://travis-ci.org/tinygrasshopper/bettercsv)
 =========
 
 A better csv implementation for golang. Forked from the 'encoding/csv' golang(1.3.3) csv implementation to provide missing functionality. 

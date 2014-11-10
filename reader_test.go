@@ -18,6 +18,7 @@ var readTests = []struct {
 
 	// These fields are copied into the Reader
 	Comma            rune
+	Quote            rune
 	Comment          rune
 	FieldsPerRecord  int
 	LazyQuotes       bool
@@ -250,6 +251,18 @@ x,,,
 			{"c", "d", "e"},
 		},
 	},
+	{
+		Name:   "Custom quote",
+		Quote:  '|',
+		Input:  "|a|,|b,c|,|d|",
+		Output: [][]string{{"a", "b,c", "d"}},
+	},
+	{
+		Name:   "Optional Custom quote",
+		Quote:  '|',
+		Input:  "a,|b,c|,d",
+		Output: [][]string{{"a", "b,c", "d"}},
+	},
 }
 
 func TestRead(t *testing.T) {
@@ -266,6 +279,9 @@ func TestRead(t *testing.T) {
 		r.TrimLeadingSpace = tt.TrimLeadingSpace
 		if tt.Comma != 0 {
 			r.Comma = tt.Comma
+		}
+		if tt.Quote != 0 {
+			r.Quote = tt.Quote
 		}
 		out, err := r.ReadAll()
 		perr, _ := err.(*ParseError)

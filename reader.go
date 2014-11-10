@@ -102,7 +102,7 @@ var (
 type Reader struct {
 	Comma            rune // field delimiter (set to ',' by NewReader)
 	Comment          rune // comment character for start of line
-	Quote            rune
+	Quote            rune // quote character (set to '"' by NewReader)
 	FieldsPerRecord  int  // number of expected fields per record
 	LazyQuotes       bool // allow lazy quotes
 	TrailingComma    bool // ignored; here for backwards compatibility

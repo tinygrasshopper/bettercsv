@@ -23,6 +23,7 @@ import (
 // If UseCRLF is true, the Writer ends each record with \r\n instead of \n.
 type Writer struct {
 	Comma   rune // Field delimiter (set to ',' by NewWriter)
+	Quote   rune // Quote field (set to '"' by NewWriter)
 	UseCRLF bool // True to use \r\n as the line terminator
 	w       *bufio.Writer
 }
@@ -31,6 +32,7 @@ type Writer struct {
 func NewWriter(w io.Writer) *Writer {
 	return &Writer{
 		Comma: ',',
+		Quote: '"',
 		w:     bufio.NewWriter(w),
 	}
 }
@@ -53,14 +55,14 @@ func (w *Writer) Write(record []string) (err error) {
 			}
 			continue
 		}
-		if err = w.w.WriteByte('"'); err != nil {
+		if _, err = w.w.WriteRune(w.Quote); err != nil {
 			return
 		}
 
 		for _, r1 := range field {
 			switch r1 {
-			case '"':
-				_, err = w.w.WriteString(`""`)
+			case w.Quote:
+				_, err = w.w.WriteString(string([]rune{w.Quote, w.Quote}))
 			case '\r':
 				if !w.UseCRLF {
 					err = w.w.WriteByte('\r')
@@ -79,7 +81,7 @@ func (w *Writer) Write(record []string) (err error) {
 			}
 		}
 
-		if err = w.w.WriteByte('"'); err != nil {
+		if _, err = w.w.WriteRune(w.Quote); err != nil {
 			return
 		}
 	}
@@ -118,7 +120,7 @@ func (w *Writer) WriteAll(records [][]string) (err error) {
 // Empty fields, files with a Comma, fields with a quote or newline, and
 // fields which start with a space must be enclosed in quotes.
 func (w *Writer) fieldNeedsQuotes(field string) bool {
-	if len(field) == 0 || strings.IndexRune(field, w.Comma) >= 0 || strings.IndexAny(field, "\"\r\n") >= 0 {
+	if len(field) == 0 || strings.IndexRune(field, w.Comma) >= 0 || strings.IndexRune(field, w.Quote) >= 0 || strings.IndexAny(field, "\r\n") >= 0 {
 		return true
 	}
 

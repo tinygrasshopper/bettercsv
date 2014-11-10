@@ -102,6 +102,7 @@ var (
 type Reader struct {
 	Comma            rune // field delimiter (set to ',' by NewReader)
 	Comment          rune // comment character for start of line
+	Quote            rune
 	FieldsPerRecord  int  // number of expected fields per record
 	LazyQuotes       bool // allow lazy quotes
 	TrailingComma    bool // ignored; here for backwards compatibility
@@ -116,6 +117,7 @@ type Reader struct {
 func NewReader(r io.Reader) *Reader {
 	return &Reader{
 		Comma: ',',
+		Quote: '"',
 		r:     bufio.NewReader(r),
 	}
 }
@@ -271,7 +273,7 @@ func (r *Reader) parseField() (haveField bool, delim rune, err error) {
 		}
 		return true, r1, nil
 
-	case '"':
+	case r.Quote:
 		// quoted field
 	Quoted:
 		for {
@@ -286,7 +288,7 @@ func (r *Reader) parseField() (haveField bool, delim rune, err error) {
 				return false, 0, err
 			}
 			switch r1 {
-			case '"':
+			case r.Quote:
 				r1, err = r.readRune()
 				if err != nil || r1 == r.Comma {
 					break Quoted
@@ -294,13 +296,13 @@ func (r *Reader) parseField() (haveField bool, delim rune, err error) {
 				if r1 == '\n' {
 					return true, r1, nil
 				}
-				if r1 != '"' {
+				if r1 != r.Quote {
 					if !r.LazyQuotes {
 						r.column--
 						return false, 0, r.error(ErrQuote)
 					}
 					// accept the bare quote
-					r.field.WriteRune('"')
+					r.field.WriteRune(r.Quote)
 				}
 			case '\n':
 				r.line++
@@ -320,7 +322,7 @@ func (r *Reader) parseField() (haveField bool, delim rune, err error) {
 			if r1 == '\n' {
 				return true, r1, nil
 			}
-			if !r.LazyQuotes && r1 == '"' {
+			if !r.LazyQuotes && r1 == r.Quote {
 				return false, 0, r.error(ErrBareQuote)
 			}
 		}

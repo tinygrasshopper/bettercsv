@@ -26,5 +26,6 @@ content := csvReader.ReadAll()
 # Goals
 - [x] Custom quote rune while reading
 - [x] Custom quote rune while writing
+- [x] Support no quoting charater while writing
 - [ ] Supporting headers
 - [ ] Reading to a map

@@ -11,11 +11,12 @@ import (
 )
 
 var writeTests = []struct {
-	Input   [][]string
-	Output  string
-	UseCRLF bool
-	Quote   rune
-	Comma   rune
+	Input     [][]string
+	Output    string
+	UseCRLF   bool
+	Quote     rune
+	Comma     rune
+	ZeroQuote bool
 }{
 	{Input: [][]string{{"abc"}}, Output: "abc\n"},
 	{Input: [][]string{{"abc"}}, Output: "abc\r\n", UseCRLF: true},
@@ -34,6 +35,7 @@ var writeTests = []struct {
 	{Input: [][]string{{"abc", "def"}}, Output: "abc;def\n", Comma: ';'},
 	{Input: [][]string{{`a|b`}}, Output: `|a||b|` + "\n", Quote: '|'},
 	{Input: [][]string{{`|a|b|`}}, Output: `|||a||b|||` + "\n", Quote: '|'},
+	{Input: [][]string{{`a`, ``, `b`}}, Output: `a,,b` + "\n", ZeroQuote: true},
 }
 
 func TestWrite(t *testing.T) {
@@ -46,6 +48,9 @@ func TestWrite(t *testing.T) {
 		}
 		if tt.Quote != 0 {
 			f.Quote = tt.Quote
+		}
+		if tt.ZeroQuote {
+			f.Quote = '\000'
 		}
 		err := f.WriteAll(tt.Input)
 		if err != nil {

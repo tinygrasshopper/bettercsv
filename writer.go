@@ -120,6 +120,10 @@ func (w *Writer) WriteAll(records [][]string) (err error) {
 // Empty fields, files with a Comma, fields with a quote or newline, and
 // fields which start with a space must be enclosed in quotes.
 func (w *Writer) fieldNeedsQuotes(field string) bool {
+	if w.Quote == 0 {
+		return false
+	}
+
 	if len(field) == 0 || strings.IndexRune(field, w.Comma) >= 0 || strings.IndexRune(field, w.Quote) >= 0 || strings.IndexAny(field, "\r\n") >= 0 {
 		return true
 	}
